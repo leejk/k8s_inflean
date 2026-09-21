@@ -1,0 +1,53 @@
+name: deploy order order-backend
+# 프로젝트의 루트에 위치
+# 아래와 같은 스타일의 문법을 github actions에서는 이벤트라 부름.
+# dev 브랜치에 소스가 머지되면 밑에 있는 job들을 실행
+on:
+  push:
+    branches:
+      - dev
+
+# uses : 누군가 미리 만들어 놓은 명령어 집합 혹은 프로그램
+# run : 내가 정의한 명령어
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout github # 1. 소스코드 클론
+        uses: actions/checkout@v2
+      
+      - name: install kubectl # 2. kubectl 설치
+        uses: azure/setup-kubectl@v3
+        with:
+          version: "v1.25.9"
+        id: install
+        
+      - name: configure aws
+        uses: aws-actions/configure-aws-credentials@v1 # 3. cli 설치 및 밑에 정보로 aws 계정 셋팅
+        with:
+          aws-access-key-id: ${{ secrets.AWS_KEY }} # github의 settings > secrets and variables > Actions에 저장
+          aws-secret-access-key:  ${{ secrets.AWS_SECRET }}
+          aws-region: ap-northeast-2
+
+      - name: update cluster infomation
+        run: aws eks update-kubeconfig --name  my-cluster --region ap-northeast-2 # my-cluster에다가 kubectl 통해 접근하겠다. kubectl 설치 및 셋팅
+
+      - name: Login to ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1 # ecr 로그인
+
+      - name: build and push docker image to ecr # 4. 이미지 빌드 및 푸시
+        env:
+          REGISTRY: 444783698431.dkr.ecr.ap-northeast-2.amazonaws.com # ecr 주소
+          REPOSITORY: order-backend
+          IMAGE_TAG: latest
+        run: |
+          docker build \
+          -t $REGISTRY/$REPOSITORY:$IMAGE_TAG \
+          -f ./2.ordersystem/Dockerfile ./2.ordersystem
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
+      - name: eks kubectl apply # 5. 이미지 기반으로 pod 재생성
+        run: |
+          kubectl rollout restart deployment ordersystem-backend -n bradkim
+        # kubectl apply -f ./2.ordersystem/k8s/k8s-ordersystem/depl_svc.yml

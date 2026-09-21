@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ordersystem-backend
+  namespace: ljk197
+spec:
+# Deployment나 StatefulSet이 유지할 "옛날 ReplicaSet"의 수를 제한하는 옵션. 자원공간의 낭비 방지 및 관리의 편의성.
+# pod을 신규 배포시 레플리카셋을 몇개나 만들 것이냐.
+  revisionHistoryLimit: 2
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ordersystem-backend
+  template:
+    metadata:
+      labels:
+        app: ordersystem-backend
+    spec:
+      containers:
+      - name: ordersystem-backend
+        image: 444783698431.dkr.ecr.ap-northeast-2.amazonaws.com/order-backend:latest # ecr uri 정보
+        ports:
+        - containerPort: 8080 # application-prod.yml의 port 번호랑 일치해야 한다. application-prod.yml 에 port가 없으면 디폴트로 8080이 지정
+        resources:
+        # 컨테이너가 사용할수 있는 리소스의 최대치. 지정안하면 최대치를 사용
+          limits:
+            cpu: "1"
+            memory: "500Mi"
+        # 컨테이너가 시작될떄 보장받아야 하는 최소 자원
+          requests:
+            cpu: "0.5"
+            memory: "250Mi"
+        env:
+        # name값과 yml의 ${변수} 의 변수명과 일치해야함
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: my-app-secrets
+              key: DB_HOST
+        - name: DB_PW
+          valueFrom:
+            secretKeyRef:
+              name: my-app-secrets
+              key: DB_PW
+        # 컨테이너 상태 확인을 통해 롤링업데이트 최적화. 새로운 pod 배포시 롤링 업데이트 전략을 이용
+        readinessProbe:
+          httpGet:
+            # healthcheck 경로
+            path: /health # health 로직을 만들어놔야 한다
+            port: 8080 # pod가 자기 스스로 8080 체크함. 그리고 쿠버네티스에 알려줌. 그리고 as-is pod 삭제한다.
+          # 컨테이너 시작 후 지연. 어느 시점에 요청을 보낼지.
+          initialDelaySeconds: 10
+          # 확인 반복 주기
+          periodSeconds: 10
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ordersystem-backend-service
+  namespace: ljk197
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: ordersystem-backend #matchLabels 과 일치해야 함.
