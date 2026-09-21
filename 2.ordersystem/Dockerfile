@@ -13,7 +13,8 @@ RUN chmod +x gradlew
 RUN ./gradlew bootJar
 
 # 두번째 스테이지 (가상의 stage2)
-FROM eclipse-temurin:17-jdk
+# FROM eclipse-temurin:17-jdk
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 # jar 만 복사하여 여기 스테이지에 있는 java와 jar로 이미지 만든다
 COPY --from=stage1 /app/build/libs/*.jar app.jar
