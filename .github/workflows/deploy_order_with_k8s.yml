@@ -5,7 +5,7 @@ name: deploy order order-backend
 on:
   push:
     branches:
-      - prod
+      - main
 
 # uses : 누군가 미리 만들어 놓은 명령어 집합 혹은 프로그램
 # run : 내가 정의한 명령어
