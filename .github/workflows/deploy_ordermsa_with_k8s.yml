@@ -51,7 +51,7 @@ jobs:
         
       - name: member build and push docker image to ecr
         env:
-          REGISTRY: 444783698431.dkr.ecr.ap-northeast-2.amazonaws.com/
+          REGISTRY: 444783698431.dkr.ecr.ap-northeast-2.amazonaws.com
           REPOSITORY: member-service
           IMAGE_TAG: latest
         run: |
