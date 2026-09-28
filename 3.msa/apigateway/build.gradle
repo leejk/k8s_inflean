@@ -26,6 +26,7 @@ repositories {
 dependencies {
 //	gateway의존성 추가
 	implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
 //	eureka client 의존성 추가
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'

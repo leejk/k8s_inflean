@@ -24,6 +24,8 @@ spring:
       ddl-auto: create
     show_sql: true
 
+# server: port 부분은 없다. 격리되어 있는 도커 컨테이너 환경이기 때문
+# 격리되어 있는 도커 컨테이너 안에서 실행되기 때문에 각각 서버의 포트가 8080이어도 상관없다.
 jwt:
   expiration: 1000
   #  인코딩된 문자 32자 이상 필요.(특수문자안됨)

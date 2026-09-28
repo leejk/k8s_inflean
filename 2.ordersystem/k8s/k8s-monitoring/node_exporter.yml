@@ -1,5 +1,8 @@
 apiVersion: apps/v1
 # DaemonSet은 클러스터 내 모든 노드에 Pod를 하나씩 자동으로 배포하기 위한 리소스
+# 예를 들어 인스턴스가 3대면 이 자원을 실행시키면 3개의 인스턴스에 각각 하나의 pod를 실행
+# 즉 node-exporter는 각 인스턴스에 하나씩 실행
+# 호스트의 /proc, /sys, / 경로를 컨테이너 내부에 마운트 해 노드의 실제 하드웨어 정보를 읽는다.
 kind: DaemonSet
 metadata:
   name: node-exporter
@@ -20,8 +23,8 @@ spec:
             - containerPort: 9100
             # 컨테이너의 포트를 노드(호스트) 자체의 포트로 직접 노출하겠다는 의미
               hostPort: 9100
-          volumeMounts:
-          # volumeMounts : 실제경로의 파일을 컨테이너내의 경로에 올리는 작업
+          volumeMounts: #컨테이너 내부
+          # volumeMounts : 실제경로의 파일을 컨테이너내의 경로에 올리는 작업. volumnes 경로의 정보를 아래의 경로로 가지고 오겠다.
           # proc : CPU, 메모리, 프로세스 등의 실시간 정보 제공
           # sys : 커널 상태, 디바이스, 하드웨어 정보 등
           # root : 디스크 사용량
@@ -34,7 +37,7 @@ spec:
             - name: root
               mountPath: /rootfs
               readOnly: true
-      volumes:
+      volumes: #호스트
         - name: proc
           hostPath:
             path: /proc
@@ -44,6 +47,9 @@ spec:
         - name: root
           hostPath:
             path: /
+# 서비스는 사용을 안함. 서비스 사용시 로드 발랜싱을 하게 되는데 특정 파드 하나에 요청 전달 할 수 있기 때문에
+# 모든 파드의 정보를 수집하기 위해 hostport를 사용
+# 즉, 프로메테우스가 각 노드의 ipdhk node exporter 포트를 이용해 모든 파드에 접근
 # ---
 # apiVersion: v1
 # kind: Service

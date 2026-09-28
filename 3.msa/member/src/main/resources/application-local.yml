@@ -26,6 +26,7 @@ eureka:
 
 server:
 #  0으로 세팅하면 spring이 임의 port를 할당
+# 충돌 피하기 위함
   port: 0
 
 jwt:

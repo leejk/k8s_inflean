@@ -9,16 +9,17 @@ metadata:
 spec:
   tls:
   - hosts:
-      - argo.bradkim197.shop
-    secretName: argo-bradkim197-com-tls
+      - argo.ljk197.shop # route53에 등록해줘야 한다.
+    secretName: argo-ljk197-com-tls
   rules:
-  - host: argo.bradkim197.shop
+  - host: argo.ljk197.shop
     http:
       paths:
         - path: /
           pathType: Prefix
           backend:
             service:
+            # argocd-server의 80 포트로 가겠다. 80으로 가면 8080으로 보내준다. 8080은 https 가 아닌 걸로 해놨기 때문에(- --insecure) 위의 tls 인증서에서 인증처리한다.
               name: argocd-server
               port:
                 number: 80

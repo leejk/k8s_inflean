@@ -7,7 +7,7 @@ spec:
 # Deployment나 StatefulSet이 유지할 "옛날 ReplicaSet"의 수를 제한하는 옵션. 자원공간의 낭비 방지 및 관리의 편의성.
 # pod을 신규 배포시 레플리카셋을 몇개나 만들 것이냐.
   revisionHistoryLimit: 2
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app: ordersystem-backend
